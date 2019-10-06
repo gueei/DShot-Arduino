@@ -1,6 +1,6 @@
 #include <DShot.h>
 
-DShot esc(1);
+DShot esc(7);
 
 void setup() {
   Serial.begin(115200);
