@@ -34,25 +34,20 @@ static inline void sendData(){
 		"_for_loop:			\n"
 		"OR r25, %1 \n"
 		"OUT %0, r25 \n"
-		// Need 4 cycles to turn off, thus need to wait 6 cycles
-		NOP8
-		NOP8
+		// Wait 10 cycles
+		NOP4
+		NOP2
 		// Set Low for low bits only
 		//DSHOT_PORT &= dShotBits[i];
 		"LD r24, Z+		\n"
 		"AND r25, r24	\n"
 		"OUT %0, r25	\n"
-		// Need 3 cycles to turn off everything, thus wait 7 cycles
+		// Wait 10 cycles
 		NOP8
-		NOP8
-		NOP2
 		// Turn off everything
-		//DSHOT_PORT &= ~dShotPins;
+		// DSHOT_PORT &= ~dShotPins;
 		"AND r25, %2 \n"
 		"OUT %0, r25 \n"
-		NOP4
-		NOP2
-		NOP
 		// Add to i (tmp_reg)
 		"INC r23		\n"
 		"CPI r23, 16	\n"
@@ -72,20 +67,18 @@ static boolean timerActive = false;
   1000 Hz Update rate
 */
 static void initISR(){
-	// TIMER 2 for interrupt frequency 1000 Hz:
-	cli(); // stop interrupts
-	TCCR2A = 0; // set entire TCCR2A register to 0
-	TCCR2B = 0; // same for TCCR2B
-	TCNT2  = 0; // initialize counter value to 0
-	// set compare match register for 1000 Hz increments
-	OCR2A = 249; // = 16000000 / (64 * 1000) - 1 (must be <256)
-	// turn on CTC mode
-	TCCR2B |= (1 << WGM21);
-	// Set CS22, CS21 and CS20 bits for 64 prescaler
-	TCCR2B |= (1 << CS22) | (0 << CS21) | (0 << CS20);
-	// enable timer compare interrupt
-	TIMSK2 |= (1 << OCIE2A);
-
+cli(); // stop interrupts
+TCCR1A = 0; // set entire TCCR1A register to 0
+TCCR1B = 0; // same for TCCR1B
+TCNT1  = 0; // initialize counter value to 0
+// set compare match register for 500 Hz increments
+OCR1A = 31999; // = 16000000 / (1 * 500) - 1 (must be <65536)
+// turn on CTC mode
+TCCR1B |= (1 << WGM12);
+// Set CS12, CS11 and CS10 bits for 1 prescaler
+TCCR1B |= (0 << CS12) | (0 << CS11) | (1 << CS10);
+// enable timer compare interrupt
+TIMSK1 |= (1 << OCIE1A);
 	timerActive = true;
 	for (byte i=0; i<16; i++){
 		dShotBits[i] = 0;
@@ -99,7 +92,7 @@ static boolean isTimerActive(){
   return timerActive;
 }
 
-ISR(TIMER2_COMPA_vect){
+ISR(TIMER1_COMPA_vect){
    sendData();
 }
 
