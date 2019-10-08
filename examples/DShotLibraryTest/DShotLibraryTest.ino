@@ -19,8 +19,8 @@ void setup() {
   // Notice, all pins must be connected to same PORT
   esc1.attach(7);
   esc2.attach(5);
-  esc1.setThrottle(0xf0f);
-  esc2.setThrottle(0xfff);
+  esc1.setThrottle(0);
+  esc2.setThrottle(0);
 }
 
 void loop() {

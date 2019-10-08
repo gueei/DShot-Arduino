@@ -18,14 +18,14 @@ static uint8_t dShotPins = 0;
 
 /*
 	DSHOT600 implementation
-	For 16MHz CPU,
+	For 16MHz CPU, 
 	0: 10 cycle ON, 17 cycle OFF
 	1: 20 cycle ON, 7 cycle OFF
 	Total 27 cycle each bit
 */
 static inline void sendData(){
 	noInterrupts();
-	asm(
+	asm(		
 		// For i = 0 to 15:
 		"LDI r23, 0	\n"
 		// Set High for every attached pins
@@ -35,29 +35,31 @@ static inline void sendData(){
 		"OR r25, %1 \n"
 		"OUT %0, r25 \n"
 		// Need 4 cycles to turn off, thus need to wait 6 cycles
-		NOP4
-		NOP2
+		NOP8
+		NOP8
 		// Set Low for low bits only
 		//DSHOT_PORT &= dShotBits[i];
 		"LD r24, Z+		\n"
 		"AND r25, r24	\n"
 		"OUT %0, r25	\n"
 		// Need 3 cycles to turn off everything, thus wait 7 cycles
+		NOP8
+		NOP8
+		NOP2
+		// Turn off everything
+		//DSHOT_PORT &= ~dShotPins;
+		"AND r25, %2 \n"
+		"OUT %0, r25 \n"
 		NOP4
 		NOP2
 		NOP
-		// Turn off everything
-		//DSHOT_PORT &= ~dShotPins;
-		"COM %1 \n"
-		"AND r25, %1 \n"
-		"OUT %0, r25 \n"
 		// Add to i (tmp_reg)
 		"INC r23		\n"
 		"CPI r23, 16	\n"
 		"BRLO	_for_loop	\n"
 		// 7 cycles to next bit (4 to add to i and branch, 2 to turn on), no wait
-		:
-		: "I" (_SFR_IO_ADDR(DSHOT_PORT)), "r" (dShotPins), "z" (dShotBits)
+		:  
+		: "I" (_SFR_IO_ADDR(DSHOT_PORT)), "r" (dShotPins), "r" (~dShotPins), "z" (dShotBits)
 		: "r25", "r24", "r23"
 	);
 	interrupts();
@@ -147,7 +149,6 @@ uint16_t DShot::setThrottle(uint16_t throttle){
       dShotBits[i] |= this->_pinMask;
     else
       dShotBits[i] &= ~(this->_pinMask);
-	dShotBits[i] |= dShotPins;
     mask >>= 1;
   }
   return _packet;
