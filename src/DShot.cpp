@@ -18,14 +18,14 @@ static uint8_t dShotPins = 0;
 
 /*
 	DSHOT600 implementation
-	For 16MHz CPU, 
+	For 16MHz CPU,
 	0: 10 cycle ON, 17 cycle OFF
 	1: 20 cycle ON, 7 cycle OFF
 	Total 27 cycle each bit
 */
 static inline void sendData(){
 	noInterrupts();
-	asm(		
+	asm(
 		// For i = 0 to 15:
 		"LDI r23, 0	\n"
 		// Set High for every attached pins
@@ -53,7 +53,7 @@ static inline void sendData(){
 		"CPI r23, 16	\n"
 		"BRLO	_for_loop	\n"
 		// 7 cycles to next bit (4 to add to i and branch, 2 to turn on), no wait
-		:  
+		:
 		: "I" (_SFR_IO_ADDR(DSHOT_PORT)), "r" (dShotPins), "r" (~dShotPins), "z" (dShotBits)
 		: "r25", "r24", "r23"
 	);
@@ -103,6 +103,9 @@ ISR(TIMER1_COMPA_vect){
 static inline uint16_t createPacket(uint16_t throttle){
   uint8_t csum = 0;
   throttle <<= 1;
+	// Indicate as command if less than 48
+	if (throttle <48)
+		throttle |= 1;
   uint16_t csum_data = throttle;
   for (byte i=0; i<3; i++){
     csum ^= csum_data;

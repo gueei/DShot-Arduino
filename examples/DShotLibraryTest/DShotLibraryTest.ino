@@ -11,24 +11,40 @@ Leonardo: PORTB, available pins 4-7 (D8-D11)
 e.g.
 #define DSHOT_PORT PORTD
 */
-DShot esc1, esc2;
+DShot esc1;
+
+uint16_t throttle = 0;
+uint16_t target = 0;
 
 void setup() {
   Serial.begin(115200);
 
   // Notice, all pins must be connected to same PORT
-  esc1.attach(7);
-  esc2.attach(5);
-  esc1.setThrottle(0);
-  esc2.setThrottle(0);
+  esc1.attach(7);  
+  esc1.setThrottle(throttle);
 }
 
 void loop() {
   if (Serial.available()>0){
-    uint16_t throttle = Serial.parseInt();
-    uint16_t packet = esc1.setThrottle(throttle);
-    Serial.print(throttle, HEX);
+    target = Serial.parseInt();
+    if (target>2047)
+      target = 2047;
+    Serial.print(target, HEX);
     Serial.print("\t");
-    Serial.println(packet, HEX);
   }
+  if (throttle<48){
+    throttle = 48;
+  }
+  if (target<=48){
+    esc1.setThrottle(target);
+  }else{
+    if (target>throttle){
+      throttle ++;
+      esc1.setThrottle(throttle);
+    }else if (target<throttle){
+      throttle --;
+      esc1.setThrottle(throttle);
+    }
+  }
+  delay(10);
 }
