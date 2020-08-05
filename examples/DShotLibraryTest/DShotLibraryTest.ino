@@ -11,7 +11,7 @@ Leonardo: PORTB, available pins 4-7 (D8-D11)
 e.g.
 #define DSHOT_PORT PORTD
 */
-DShot esc1;
+DShot esc1(DShot::Mode::DSHOT300);
 
 uint16_t throttle = 0;
 uint16_t target = 0;
