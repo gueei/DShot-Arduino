@@ -1,5 +1,5 @@
 #include "Arduino.h"
-#include "DShot.h"
+#include "DShot4.h"
 
 
 // Each item contains the bit of the port
@@ -242,9 +242,10 @@ ISR(TIMER1_COMPA_vect){
   Prepare data packet, attach 0 to telemetry bit, and calculate CRC
   throttle: 11-bit data
 */
-static inline uint16_t createPacket(uint16_t throttle){
+static inline uint16_t createPacket(uint16_t throttle, uint8_t telemetry){
   uint8_t csum = 0;
   throttle <<= 1;	// telemetry bit = 0
+  throttle |= (telemetry & 0x1);
 	// Indicate as command if less than 48
 	if (throttle < 48 && throttle > 0)
 		throttle |= 1;
@@ -278,12 +279,12 @@ void DShot::attach(uint8_t pin){
   pin: pin of motor
   throttle: 11-bit data
 */
-uint16_t DShot::setThrottle(uint8_t pin, uint16_t throttle){
+uint16_t DShot::setThrottle(uint8_t pin, uint16_t throttle, uint8_t set_telemetry_bit){
 	uint8_t bitMaskPin = digitalPinToBitMask(pin);
   //this->_throttle[pin] = throttle;
 
   // TODO: This part can be further optimized when combine with create packet
-  this->_packet = createPacket(throttle);
+  this->_packet = createPacket(throttle, set_telemetry_bit);
   uint16_t mask = 0x8000;
   for (byte i=0; i<16; i++){
     if (this->_packet & mask)
