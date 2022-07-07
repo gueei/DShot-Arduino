@@ -1,4 +1,4 @@
-#include "DShot4.h"
+#include "DShot.h"
 
 /*
 
@@ -17,7 +17,7 @@
 #define M3 10
 #define M4 11
 
-DShot4 esc(DShot4::Mode::DSHOT300);
+DShot esc(DShot::Mode::DSHOT300);
 
 uint16_t throttle = 0;
 uint16_t target = 0;
@@ -42,9 +42,9 @@ void loop() {
 
     if (target > 2047)  // safety measure, disarm when wrong input
       target = 0;
-    Serial.print(target, DEC);  //, HEX);
+    Serial.print(target, DEC);
     Serial.print("\t");
-    Serial.print(throttle, DEC);  //, HEX);
+    Serial.print(throttle, DEC);
     Serial.print("\n");
   }
 
