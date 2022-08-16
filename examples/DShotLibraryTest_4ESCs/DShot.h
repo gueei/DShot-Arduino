@@ -26,8 +26,8 @@
 #define DSHOT_PORT1 PORTB
 #define PORT1 digitalPinToPort(8)  // Arduino Port number for PORTB
 // More pins: PortF 18-21: i.e. D18-D21
-#define DSHOT_PORT2 PORTF
-#define PORT2 digitalPinToPort(18)  // Arduino Port number for PORTF
+// #define DSHOT_PORT2 PORTF
+// #define PORT2 digitalPinToPort(18)  // Arduino Port number for PORTF
 #endif
 
 class DShot {
